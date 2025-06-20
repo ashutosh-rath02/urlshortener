@@ -1,0 +1,50 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  username  String   @unique
+  isActive  Boolean  @default(true)
+  isVerified Boolean @default(false)
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  urls Url[]
+
+  @@map("users")
+}
+
+model Url {
+  id          String    @id @default(cuid())
+  originalUrl String
+  shortCode   String    @unique
+  userId      String?
+  isActive    Boolean   @default(true)
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  clickCount  Int       @default(0)
+
+  // Relations - make it optional and handle null userId
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade, map: "urls_userId_fkey")
+
+  @@map("urls")
+}
+
+enum Role {
+  USER
+  ADMIN
+} 
