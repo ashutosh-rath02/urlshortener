@@ -13,6 +13,7 @@ export const isValidUrl = (url: string): boolean => {
 
 // Short code validation
 export const isValidShortCode = (code: string): boolean => {
+  if (typeof code !== "string") return false;
   return code.length >= 3 && code.length <= 10 && /^[a-zA-Z0-9_-]+$/.test(code);
 };
 

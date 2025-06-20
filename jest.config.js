@@ -15,8 +15,9 @@ module.exports = {
   ],
   coverageDirectory: "coverage",
   coverageReporters: ["text", "lcov", "html"],
-  moduleNameMapping: {
+  moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
   },
   setupFilesAfterEnv: ["<rootDir>/src/test/setup.ts"],
+  transformIgnorePatterns: ["node_modules/(?!(nanoid)/)"],
 };
