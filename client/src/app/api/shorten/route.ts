@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { randomBytes } from "crypto";
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,23 +22,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: Connect to your backend API
-    // For now, we'll return a mock response
-    // In production, this would call your Node.js backend
+    // Call the backend API to create the short URL
+    const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
+    const response = await fetch(`${backendUrl}/api/urls`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ originalUrl }),
+    });
 
-    // Use crypto.randomBytes for better randomness and consistency
-    const shortCode = randomBytes(3).toString("hex");
-    const shortUrl = `${request.nextUrl.origin}/s/${shortCode}`;
+    if (!response.ok) {
+      const errorData = await response.json();
+      return NextResponse.json(
+        { error: errorData.error || "Failed to create short URL" },
+        { status: response.status }
+      );
+    }
 
-    const response = {
-      id: Date.now().toString(),
-      originalUrl,
+    const data = await response.json();
+
+    // Transform backend response to match frontend expectations
+    const shortUrl = `${request.nextUrl.origin}/s/${data.data.shortCode}`;
+
+    return NextResponse.json({
+      id: data.data.id,
+      originalUrl: data.data.originalUrl,
       shortUrl,
-      createdAt: new Date().toISOString(),
-      clicks: 0,
-    };
-
-    return NextResponse.json(response);
+      createdAt: data.data.createdAt,
+      clicks: data.data.clicks || 0,
+    });
   } catch (error) {
     console.error("Error shortening URL:", error);
     return NextResponse.json(

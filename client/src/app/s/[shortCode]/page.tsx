@@ -16,19 +16,32 @@ export default function RedirectPage() {
       return;
     }
 
-    // TODO: Call your backend API to get the original URL
-    // For now, we'll simulate a redirect
     const redirectToOriginal = async () => {
       try {
-        // In production, this would call your backend API
-        // const response = await fetch(`/api/redirect/${shortCode}`);
-        // const data = await response.json();
+        // Call the redirect API to get the original URL
+        const response = await fetch(`/api/redirect/${shortCode}`);
 
-        // For demo purposes, redirect to a sample URL
-        setTimeout(() => {
-          window.location.href = "https://example.com";
-        }, 2000);
-      } catch {
+        if (!response.ok) {
+          if (response.status === 404) {
+            setError("Short URL not found");
+          } else {
+            setError("Failed to redirect");
+          }
+          return;
+        }
+
+        const data = await response.json();
+        const originalUrl = data.originalUrl;
+
+        if (!originalUrl) {
+          setError("Original URL not found");
+          return;
+        }
+
+        // Redirect to the actual original URL
+        window.location.href = originalUrl;
+      } catch (err) {
+        console.error("Redirect error:", err);
         setError("Failed to redirect");
       }
     };

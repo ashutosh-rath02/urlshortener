@@ -34,10 +34,6 @@ export default function UrlShortenerForm({
     }
   };
 
-  const generateShortCode = () => {
-    return Math.random().toString(36).substr(2, 6);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -56,8 +52,7 @@ export default function UrlShortenerForm({
     setIsLoading(true);
 
     try {
-      // For now, we'll simulate the API call
-      // In a real app, this would call your backend API
+      // Call the actual API endpoint
       const response = await fetch("/api/shorten", {
         method: "POST",
         headers: {
@@ -67,25 +62,21 @@ export default function UrlShortenerForm({
       });
 
       if (!response.ok) {
-        throw new Error("Failed to shorten URL");
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to shorten URL");
       }
 
-      // For demo purposes, create a mock response
-      const mockData = {
-        id: Date.now().toString(),
-        originalUrl: url,
-        shortUrl: isClient
-          ? `${window.location.origin}/s/${generateShortCode()}`
-          : "",
-        createdAt: new Date().toISOString(),
-        clicks: 0,
-      };
+      const data = await response.json();
 
-      onUrlCreated(mockData);
+      onUrlCreated(data);
       setSuccess("URL shortened successfully!");
       setUrl("");
     } catch (err) {
-      setError("Failed to shorten URL. Please try again.");
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Failed to shorten URL. Please try again.";
+      setError(errorMessage);
       console.error("Error shortening URL:", err);
     } finally {
       setIsLoading(false);

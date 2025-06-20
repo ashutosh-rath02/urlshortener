@@ -1,6 +1,6 @@
 # URL Shortener - Next.js Client
 
-A modern, responsive web application for shortening URLs built with Next.js, TypeScript, and Tailwind CSS.
+A modern, responsive web application for shortening URLs built with Next.js, TypeScript, and Tailwind CSS. This frontend integrates with a Node.js backend API that implements Clean Architecture principles.
 
 ## Features
 
@@ -11,6 +11,7 @@ A modern, responsive web application for shortening URLs built with Next.js, Typ
 - 📊 **Analytics**: Track clicks and engagement
 - 📋 **Copy to Clipboard**: One-click copying of shortened URLs
 - 🎨 **Beautiful Design**: Modern gradient backgrounds and smooth animations
+- 🗄️ **Database Integration**: Uses backend API with database persistence
 
 ## Tech Stack
 
@@ -19,15 +20,28 @@ A modern, responsive web application for shortening URLs built with Next.js, Typ
 - **Styling**: Tailwind CSS
 - **Icons**: Heroicons (SVG)
 - **State Management**: React Hooks
+- **Backend Integration**: RESTful API calls to Node.js backend
 
-## Getting Started
-
-### Prerequisites
+## Prerequisites
 
 - Node.js 18+
 - npm or yarn
+- **Backend Server**: The Node.js backend must be running (see backend setup)
 
-### Installation
+## Getting Started
+
+### 1. Backend Setup
+
+First, ensure your backend server is running:
+
+```bash
+# In the root directory (not client)
+npm run dev
+```
+
+The backend should be running on `http://localhost:3000`
+
+### 2. Frontend Setup
 
 1. Navigate to the client directory:
 
@@ -41,22 +55,30 @@ A modern, responsive web application for shortening URLs built with Next.js, Typ
    npm install
    ```
 
-3. Run the development server:
+3. Create environment file:
+
+   ```bash
+   # Create .env.local file
+   echo "BACKEND_URL=http://localhost:3000" > .env.local
+   ```
+
+4. Run the development server:
 
    ```bash
    npm run dev
    ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+5. Open [http://localhost:3001](http://localhost:3001) in your browser.
 
 ## Project Structure
 
 ```
 src/
 ├── app/                    # Next.js App Router
-│   ├── api/               # API routes
-│   │   └── shorten/       # URL shortening endpoint
-│   │   └── s/             # Short URL redirects
+│   ├── api/               # API routes (proxies to backend)
+│   │   ├── shorten/       # URL shortening endpoint
+│   │   └── redirect/      # URL redirect endpoint
+│   ├── s/                 # Short URL redirects
 │   │   └── [shortCode]/   # Dynamic redirect pages
 │   ├── globals.css        # Global styles
 │   ├── layout.tsx         # Root layout
@@ -67,46 +89,31 @@ src/
     └── UrlList.tsx        # List of shortened URLs
 ```
 
-## Components
+## Backend Integration
 
-### Header
+The frontend now integrates with your Clean Architecture backend:
 
-Navigation component with branding and menu items.
+### API Endpoints Used
 
-### UrlShortenerForm
+- `POST /api/urls` - Create short URL
+- `GET /api/urls/:shortCode` - Redirect to original URL
+- `GET /api/urls/:shortCode/info` - Get URL information
 
-Main form component for creating shortened URLs with:
+### Data Flow
 
-- URL validation
-- Loading states
-- Error handling
-- Success feedback
+1. **User enters URL** → Frontend validates and sends to backend
+2. **Backend processes** → Creates short code and stores in database
+3. **Frontend displays** → Shows shortened URL to user
+4. **User clicks short URL** → Frontend calls backend for redirect
+5. **Backend redirects** → Returns original URL for browser redirect
 
-### UrlList
+### Environment Variables
 
-Displays created URLs with:
+Create a `.env.local` file in the client directory:
 
-- Copy to clipboard functionality
-- Click analytics
-- Test links
-- Responsive design
-
-## API Integration
-
-The client is designed to work with your Node.js backend API. Currently, it uses mock data for demonstration purposes.
-
-### API Endpoints
-
-- `POST /api/shorten` - Create a shortened URL
-- `GET /s/[shortCode]` - Redirect to original URL
-
-### Backend Integration
-
-To connect with your backend:
-
-1. Update the API calls in `UrlShortenerForm.tsx` to point to your backend server
-2. Update the redirect logic in `s/[shortCode]/page.tsx` to fetch from your backend
-3. Configure CORS on your backend to allow requests from the client
+```env
+BACKEND_URL=http://localhost:3000
+```
 
 ## Development
 
@@ -117,23 +124,33 @@ To connect with your backend:
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
 
-### Environment Variables
+### Backend Requirements
 
-Create a `.env.local` file for environment variables:
+The backend must be running and accessible at the URL specified in `BACKEND_URL`. The backend should implement:
 
-```env
-NEXT_PUBLIC_API_URL=http://localhost:3001
-```
+- Clean Architecture structure
+- Database persistence (Prisma/PostgreSQL)
+- URL shortening logic
+- Redirect functionality
+- Error handling
 
 ## Deployment
 
+### Frontend Deployment
+
 The app can be deployed to Vercel, Netlify, or any other platform that supports Next.js.
 
-### Vercel Deployment
+### Backend Deployment
 
-1. Push your code to GitHub
-2. Connect your repository to Vercel
-3. Deploy automatically
+Ensure the backend is deployed and update the `BACKEND_URL` environment variable accordingly.
+
+### Environment Configuration
+
+For production, update the environment variables:
+
+```env
+BACKEND_URL=https://your-backend-domain.com
+```
 
 ## Contributing
 
