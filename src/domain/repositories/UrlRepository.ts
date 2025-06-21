@@ -18,4 +18,13 @@ export interface UrlRepository {
   existsByShortCode: (shortCode: ShortCode) => Promise<boolean>;
   findActiveUrls: () => Promise<Url[]>;
   findExpiredUrls: () => Promise<Url[]>;
+  // Analytics methods
+  getTotalUrls: () => Promise<number>;
+  getTotalClicks: () => Promise<number>;
+  getTopUrls: (limit: number) => Promise<Url[]>;
+  getUrlsByDateRange: (startDate: Date, endDate: Date) => Promise<Url[]>;
+  getClicksByDateRange: (
+    startDate: Date,
+    endDate: Date
+  ) => Promise<{ date: string; clicks: number }[]>;
 }

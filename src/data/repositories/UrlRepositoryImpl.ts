@@ -162,4 +162,61 @@ export class UrlRepositoryImpl implements UrlRepository {
       );
     });
   }
+
+  // Analytics methods
+  async getTotalUrls(): Promise<number> {
+    return await this.urlDataSource.getTotalUrls();
+  }
+
+  async getTotalClicks(): Promise<number> {
+    return await this.urlDataSource.getTotalClicks();
+  }
+
+  async getTopUrls(limit: number): Promise<Url[]> {
+    const dataEntities = await this.urlDataSource.getTopUrls(limit);
+
+    return dataEntities.map((dataEntity) => {
+      const domainData = toDomainEntity(dataEntity);
+      return new Url(
+        domainData.id,
+        domainData.originalUrl,
+        domainData.shortCode,
+        domainData.userId,
+        domainData.isActive,
+        domainData.expiresAt,
+        domainData.createdAt,
+        domainData.updatedAt,
+        domainData.clickCount
+      );
+    });
+  }
+
+  async getUrlsByDateRange(startDate: Date, endDate: Date): Promise<Url[]> {
+    const dataEntities = await this.urlDataSource.getUrlsByDateRange(
+      startDate,
+      endDate
+    );
+
+    return dataEntities.map((dataEntity) => {
+      const domainData = toDomainEntity(dataEntity);
+      return new Url(
+        domainData.id,
+        domainData.originalUrl,
+        domainData.shortCode,
+        domainData.userId,
+        domainData.isActive,
+        domainData.expiresAt,
+        domainData.createdAt,
+        domainData.updatedAt,
+        domainData.clickCount
+      );
+    });
+  }
+
+  async getClicksByDateRange(
+    startDate: Date,
+    endDate: Date
+  ): Promise<{ date: string; clicks: number }[]> {
+    return await this.urlDataSource.getClicksByDateRange(startDate, endDate);
+  }
 }

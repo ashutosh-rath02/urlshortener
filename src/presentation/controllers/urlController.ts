@@ -137,3 +137,74 @@ export const getUrlInfoController = (urlRepository: UrlRepository) => {
     }
   };
 };
+
+export const getAnalyticsController = (urlRepository: UrlRepository) => {
+  return async (req: Request, res: Response) => {
+    try {
+      // Get date range from query parameters (default to last 30 days)
+      const days = parseInt(req.query.days as string) || 30;
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - days);
+
+      // Get analytics data
+      const [
+        totalUrls,
+        totalClicks,
+        topUrls,
+        urlsByDateRange,
+        clicksByDateRange,
+      ] = await Promise.all([
+        urlRepository.getTotalUrls(),
+        urlRepository.getTotalClicks(),
+        urlRepository.getTopUrls(10),
+        urlRepository.getUrlsByDateRange(startDate, endDate),
+        urlRepository.getClicksByDateRange(startDate, endDate),
+      ]);
+
+      // Calculate additional metrics
+      const activeUrls = await urlRepository.findActiveUrls();
+      const expiredUrls = await urlRepository.findExpiredUrls();
+
+      const averageClicksPerUrl = totalUrls > 0 ? totalClicks / totalUrls : 0;
+      const activeUrlCount = activeUrls.length;
+      const expiredUrlCount = expiredUrls.length;
+
+      // Format top URLs for response
+      const baseUrl = process.env.BASE_URL || "http://localhost:3000";
+      const formattedTopUrls = topUrls.map((url) => ({
+        shortCode: url.shortCode,
+        originalUrl: url.originalUrl,
+        shortUrl: `${baseUrl}/${url.shortCode}`,
+        clickCount: url.clickCount,
+        createdAt: url.createdAt,
+      }));
+
+      return res.json({
+        success: true,
+        data: {
+          summary: {
+            totalUrls,
+            totalClicks,
+            activeUrlCount,
+            expiredUrlCount,
+            averageClicksPerUrl: Math.round(averageClicksPerUrl * 100) / 100,
+          },
+          topUrls: formattedTopUrls,
+          clicksByDateRange,
+          dateRange: {
+            startDate: startDate.toISOString(),
+            endDate: endDate.toISOString(),
+            days,
+          },
+        },
+      });
+    } catch (error) {
+      console.error("Analytics error:", error);
+      return res.status(500).json({
+        success: false,
+        error: "Internal server error",
+      });
+    }
+  };
+};

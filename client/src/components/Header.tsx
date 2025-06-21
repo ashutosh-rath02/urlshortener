@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Header() {
   return (
     <header className="bg-white shadow-sm border-b border-gray-200">
@@ -7,22 +9,27 @@ export default function Header() {
             <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">U</span>
             </div>
-            <h1 className="text-xl font-bold text-gray-900">URL Shortener</h1>
+            <Link
+              href="/"
+              className="text-xl font-bold text-gray-900 hover:text-blue-600 transition-colors"
+            >
+              URL Shortener
+            </Link>
           </div>
 
           <nav className="hidden md:flex items-center space-x-6">
-            <a
-              href="#"
+            <Link
+              href="/"
               className="text-gray-600 hover:text-gray-900 transition-colors"
             >
               Home
-            </a>
-            <a
-              href="#"
+            </Link>
+            <Link
+              href="/analytics"
               className="text-gray-600 hover:text-gray-900 transition-colors"
             >
               Analytics
-            </a>
+            </Link>
             <a
               href="#"
               className="text-gray-600 hover:text-gray-900 transition-colors"

@@ -17,6 +17,15 @@ export interface UrlDataSource {
   existsByShortCode: (shortCode: string) => Promise<boolean>;
   findActiveUrls: () => Promise<UrlEntity[]>;
   findExpiredUrls: () => Promise<UrlEntity[]>;
+  // Analytics methods
+  getTotalUrls: () => Promise<number>;
+  getTotalClicks: () => Promise<number>;
+  getTopUrls: (limit: number) => Promise<UrlEntity[]>;
+  getUrlsByDateRange: (startDate: Date, endDate: Date) => Promise<UrlEntity[]>;
+  getClicksByDateRange: (
+    startDate: Date,
+    endDate: Date
+  ) => Promise<{ date: string; clicks: number }[]>;
 }
 
 export class PrismaUrlDataSource implements UrlDataSource {
@@ -184,6 +193,91 @@ export class PrismaUrlDataSource implements UrlDataSource {
       createdAt: url.createdAt,
       updatedAt: url.updatedAt,
       clickCount: url.clickCount,
+    }));
+  }
+
+  async getTotalUrls(): Promise<number> {
+    const count = await this.prisma.url.count();
+    return count;
+  }
+
+  async getTotalClicks(): Promise<number> {
+    const sum = await this.prisma.url.aggregate({
+      _sum: {
+        clickCount: true,
+      },
+    });
+    return sum._sum.clickCount || 0;
+  }
+
+  async getTopUrls(limit: number): Promise<UrlEntity[]> {
+    const urls = await this.prisma.url.findMany({
+      orderBy: {
+        clickCount: "desc",
+      },
+      take: limit,
+    });
+
+    return urls.map((url) => ({
+      id: url.id,
+      originalUrl: url.originalUrl,
+      shortCode: url.shortCode,
+      userId: url.userId,
+      isActive: url.isActive,
+      expiresAt: url.expiresAt,
+      createdAt: url.createdAt,
+      updatedAt: url.updatedAt,
+      clickCount: url.clickCount,
+    }));
+  }
+
+  async getUrlsByDateRange(
+    startDate: Date,
+    endDate: Date
+  ): Promise<UrlEntity[]> {
+    const urls = await this.prisma.url.findMany({
+      where: {
+        createdAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return urls.map((url) => ({
+      id: url.id,
+      originalUrl: url.originalUrl,
+      shortCode: url.shortCode,
+      userId: url.userId,
+      isActive: url.isActive,
+      expiresAt: url.expiresAt,
+      createdAt: url.createdAt,
+      updatedAt: url.updatedAt,
+      clickCount: url.clickCount,
+    }));
+  }
+
+  async getClicksByDateRange(
+    startDate: Date,
+    endDate: Date
+  ): Promise<{ date: string; clicks: number }[]> {
+    const clicks = await this.prisma.url.findMany({
+      where: {
+        createdAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      select: {
+        createdAt: true,
+        clickCount: true,
+      },
+    });
+
+    return clicks.map((click) => ({
+      date: click.createdAt.toISOString().split("T")[0] || "",
+      clicks: click.clickCount,
     }));
   }
 }

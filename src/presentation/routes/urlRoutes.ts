@@ -4,6 +4,7 @@ import {
   createUrlController,
   getUrlInfoController,
   redirectController,
+  getAnalyticsController,
 } from "../controllers/urlController";
 
 /**
@@ -40,6 +41,15 @@ export const createUrlRoutes = (urlRepository: UrlRepository) => {
    * @returns 404,410,500 { success: false, error: string } on error
    */
   router.get("/urls/:shortCode", redirectController(urlRepository));
+
+  /**
+   * @route GET /api/analytics
+   * @summary Get analytics data for URLs.
+   * @query {number} days - Number of days to analyze (default: 30)
+   * @returns 200 { success: true, data: { ... } } on success
+   * @returns 500 { success: false, error: string } on error
+   */
+  router.get("/analytics", getAnalyticsController(urlRepository));
 
   return router;
 };
